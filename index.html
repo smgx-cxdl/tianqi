@@ -199,13 +199,18 @@
       color: var(--ink-main);
       border-radius: 3px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: transform 0.12s ease, border-color 0.2s, background 0.2s, color 0.2s;
       font-family: inherit;
       white-space: nowrap;
       flex-shrink: 0;
+      touch-action: pan-x;
       user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
+    }
+
+    .city-tab:active {
+      transform: scale(0.96);
     }
 
     .city-tab:hover {
@@ -1393,6 +1398,7 @@
       let lastCelestialCtx = null;
       let lastSvgMinuteKey = '';
       let pendingDeleteCityId = null;
+      let dialogOpenedAt = 0;
 
       function escapeHtml(str) {
         return String(str || '').replace(/[&<>"']/g, function (m) {
@@ -2103,6 +2109,7 @@
       function openDeleteCityDialog(city) {
         if (savedCities.length <= 1) return;
         pendingDeleteCityId = String(city.id);
+        dialogOpenedAt = Date.now();
         deleteTitle.textContent = `是否删除城市「${city.name}」？`;
         deleteBackdrop.classList.add('show');
       }
@@ -2114,6 +2121,7 @@
 
       deleteCancelBtn.addEventListener('click', closeDeleteCityDialog);
       deleteBackdrop.addEventListener('click', e => {
+        if (Date.now() - dialogOpenedAt < 350) return;
         if (e.target === deleteBackdrop) closeDeleteCityDialog();
       });
 
@@ -2140,11 +2148,15 @@
         savedCities.forEach(city => {
           const isActive = String(city.id) === String(activeCityId);
           const btn = document.createElement('button');
+          btn.type = 'button';
           btn.className = 'city-tab' + (isActive ? ' active' : '');
           btn.innerHTML = `<span>${escapeHtml(city.name)}</span>`;
 
           let pressTimer = null;
           let longPressTriggered = false;
+          let movedTooFar = false;
+          let lastTouchTime = 0;
+          let lastLongPressAt = 0;
           let startX = 0;
           let startY = 0;
 
@@ -2157,8 +2169,9 @@
 
           function triggerLongPress() {
             clearPressTimer();
-            if (savedCities.length <= 1) return;
+            if (movedTooFar || longPressTriggered || savedCities.length <= 1) return;
             longPressTriggered = true;
+            lastLongPressAt = Date.now();
             if (navigator.vibrate) {
               try { navigator.vibrate(18); } catch (e) {}
             }
@@ -2167,22 +2180,28 @@
 
           btn.addEventListener('contextmenu', e => {
             e.preventDefault();
+            if (!movedTooFar && !longPressTriggered && savedCities.length > 1) {
+              triggerLongPress();
+            }
           });
 
           btn.addEventListener('touchstart', e => {
             if (e.touches.length !== 1) return;
+            lastTouchTime = Date.now();
             longPressTriggered = false;
+            movedTooFar = false;
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
             clearPressTimer();
-            pressTimer = setTimeout(triggerLongPress, 480);
+            pressTimer = setTimeout(triggerLongPress, 400);
           }, { passive: true });
 
           btn.addEventListener('touchmove', e => {
-            if (!pressTimer || e.touches.length !== 1) return;
+            if (e.touches.length !== 1) return;
             const dx = Math.abs(e.touches[0].clientX - startX);
             const dy = Math.abs(e.touches[0].clientY - startY);
-            if (dx > 8 || dy > 8) {
+            if (dx > 20 || dy > 20) {
+              movedTooFar = true;
               clearPressTimer();
             }
           }, { passive: true });
@@ -2194,20 +2213,24 @@
             }
           });
 
-          btn.addEventListener('touchcancel', clearPressTimer);
+          btn.addEventListener('touchcancel', () => {
+            clearPressTimer();
+          });
 
           btn.addEventListener('mousedown', e => {
-            if (e.button !== 0) return;
+            if (e.button !== 0 || Date.now() - lastTouchTime < 800) return;
             longPressTriggered = false;
+            movedTooFar = false;
             startX = e.clientX;
             startY = e.clientY;
             clearPressTimer();
-            pressTimer = setTimeout(triggerLongPress, 480);
+            pressTimer = setTimeout(triggerLongPress, 400);
           });
 
           btn.addEventListener('mousemove', e => {
             if (!pressTimer) return;
-            if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) {
+            if (Math.abs(e.clientX - startX) > 20 || Math.abs(e.clientY - startY) > 20) {
+              movedTooFar = true;
               clearPressTimer();
             }
           });
@@ -2216,7 +2239,7 @@
           btn.addEventListener('mouseleave', clearPressTimer);
 
           btn.addEventListener('click', e => {
-            if (longPressTriggered) {
+            if (longPressTriggered || Date.now() - lastLongPressAt < 600) {
               e.preventDefault();
               e.stopPropagation();
               longPressTriggered = false;
