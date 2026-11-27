@@ -191,8 +191,8 @@
     .city-tab {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 11px;
+      justify-content: center;
+      padding: 4px 12px;
       font-size: 13.5px;
       border: 1px solid var(--gold-border);
       background: var(--card-bg);
@@ -203,6 +203,9 @@
       font-family: inherit;
       white-space: nowrap;
       flex-shrink: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .city-tab:hover {
@@ -216,17 +219,6 @@
       color: #fcfbf7;
       border-color: var(--ocean-teal);
       box-shadow: inset 0 0 0 1px rgba(243, 198, 99, 0.55);
-    }
-
-    .city-tab .remove-city {
-      font-size: 13px;
-      opacity: 0.7;
-      line-height: 1;
-      padding: 0 2px;
-    }
-
-    .city-tab .remove-city:hover {
-      opacity: 1;
     }
 
     .search-dropdown {
@@ -272,6 +264,64 @@
     .search-item small {
       color: var(--ink-light);
       font-size: 11.5px;
+    }
+
+    /* 长按删除城市弹出浮层 */
+    .city-delete-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(36, 52, 61, 0.34);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 300;
+    }
+
+    .city-delete-backdrop.show {
+      display: flex;
+    }
+
+    .city-delete-dialog {
+      width: 100%;
+      max-width: 280px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--ocean-teal);
+      border-radius: 4px;
+      box-shadow: 0 12px 28px rgba(24, 42, 52, 0.2);
+      padding: 15px 16px 13px;
+      text-align: center;
+    }
+
+    .city-delete-title {
+      font-size: 15.5px;
+      color: var(--ink-main);
+      font-weight: 600;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .city-delete-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .city-delete-actions .cal-btn,
+    .city-delete-actions .btn-classic {
+      min-width: 82px;
+      padding: 5px 14px;
+      font-size: 13.5px;
+    }
+
+    .btn-danger {
+      background: #c93b2b;
+      border-color: #c93b2b;
+    }
+
+    .btn-danger:hover {
+      background: #ad2f21;
+      border-color: #ad2f21;
     }
 
     /* 主网格：桌面端左列（日月演示 + 实况四日），右列（未来七日） */
@@ -849,7 +899,7 @@
         gap: 6px;
       }
       .city-tab {
-        padding: 3px 9px;
+        padding: 3px 11px;
         font-size: 12.5px;
       }
 
@@ -1133,6 +1183,16 @@
     </div>
   </div>
 
+  <div class="city-delete-backdrop" id="cityDeleteBackdrop">
+    <div class="city-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="cityDeleteTitle">
+      <div class="city-delete-title" id="cityDeleteTitle">删除此城市？</div>
+      <div class="city-delete-actions">
+        <button type="button" class="cal-btn" id="cityDeleteCancelBtn">取消</button>
+        <button type="button" class="btn-classic btn-danger" id="cityDeleteConfirmBtn">删除</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       const WEEKDAYS = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
@@ -1332,6 +1392,7 @@
       let weatherCacheMap = loadWeatherCacheMap();
       let lastCelestialCtx = null;
       let lastSvgMinuteKey = '';
+      let pendingDeleteCityId = null;
 
       function escapeHtml(str) {
         return String(str || '').replace(/[&<>"']/g, function (m) {
@@ -1673,6 +1734,11 @@
                 fill="rgba(245, 184, 65, 0.20)" />
         `;
 
+        const horizonAxisLineHtml = `
+          <line x1="${(cx - R).toFixed(2)}" y1="${cy}" x2="${(cx + R).toFixed(2)}" y2="${cy}"
+                stroke="#9aaab3" stroke-width="0.6" stroke-dasharray="2 2.5" opacity="0.58" />
+        `;
+
         const sectorSolidLinesHtml = `
           <line x1="${cx}" y1="${cy}" x2="${rx1.toFixed(2)}" y2="${ry1.toFixed(2)}"
                 stroke="#d68536" stroke-width="1.15" opacity="0.88" />
@@ -1682,26 +1748,27 @@
           <circle cx="${rx2.toFixed(2)}" cy="${ry2.toFixed(2)}" r="1.9" fill="#e68228" />
         `;
 
-        const sunRiseLabelY = Math.max(30, Math.min(146, ry1));
-        const sunRiseEdgeDx = Math.sqrt(Math.max(0, 81 * 81 - (sunRiseLabelY - cy) * (sunRiseLabelY - cy)));
-        const sunRiseLabelX = cx - Math.max(sunRiseEdgeDx, Math.abs(sunRiseLabelY - cy) < 12 ? 82 : 0) - 4.5;
+        // 日出/日落外延线条沿扇形边同一直线向外延伸
+        const sunRiseExtR = Math.abs(Math.sin(aRise)) < 0.2 ? 87 : 84;
+        const sunRiseExtX = cx + sunRiseExtR * Math.cos(aRise);
+        const sunRiseExtY = cy - sunRiseExtR * Math.sin(aRise);
 
-        const sunSetLabelY = Math.max(30, Math.min(146, ry2));
-        const sunSetEdgeDx = Math.sqrt(Math.max(0, 81 * 81 - (sunSetLabelY - cy) * (sunSetLabelY - cy)));
-        const sunSetLabelX = cx + Math.max(sunSetEdgeDx, Math.abs(sunSetLabelY - cy) < 12 ? 86 : 0) + 4.5;
+        const sunSetExtR = Math.abs(Math.sin(aSet)) < 0.2 ? 90 : 84;
+        const sunSetExtX = cx + sunSetExtR * Math.cos(aSet);
+        const sunSetExtY = cy - sunSetExtR * Math.sin(aSet);
 
         const sunPointerLinesHtml = `
-          <line x1="${rx1.toFixed(2)}" y1="${ry1.toFixed(2)}" x2="${(sunRiseLabelX + 2.2).toFixed(2)}" y2="${sunRiseLabelY.toFixed(2)}"
-                stroke="#d68536" stroke-width="0.75" opacity="0.52" />
-          <line x1="${rx2.toFixed(2)}" y1="${ry2.toFixed(2)}" x2="${(sunSetLabelX - 2.2).toFixed(2)}" y2="${sunSetLabelY.toFixed(2)}"
-                stroke="#d68536" stroke-width="0.75" opacity="0.52" />
+          <line x1="${rx1.toFixed(2)}" y1="${ry1.toFixed(2)}" x2="${sunRiseExtX.toFixed(2)}" y2="${sunRiseExtY.toFixed(2)}"
+                stroke="#d68536" stroke-width="0.9" opacity="0.72" stroke-linecap="round" />
+          <line x1="${rx2.toFixed(2)}" y1="${ry2.toFixed(2)}" x2="${sunSetExtX.toFixed(2)}" y2="${sunSetExtY.toFixed(2)}"
+                stroke="#d68536" stroke-width="0.9" opacity="0.72" stroke-linecap="round" />
         `;
 
         const sunLabelsOnRingHtml = `
-          <text x="${sunRiseLabelX.toFixed(2)}" y="${sunRiseLabelY.toFixed(2)}" dy="0.35em" text-anchor="end">
+          <text x="${(sunRiseExtX - 2.0).toFixed(2)}" y="${sunRiseExtY.toFixed(2)}" dy="0.35em" text-anchor="end">
             <tspan font-size="7.2" font-weight="500" fill="#536973">日出 </tspan><tspan font-size="9.4" font-weight="700" fill="#24343d">${state.sunriseLabel}</tspan>
           </text>
-          <text x="${sunSetLabelX.toFixed(2)}" y="${sunSetLabelY.toFixed(2)}" dy="0.35em" text-anchor="start">
+          <text x="${(sunSetExtX + 2.0).toFixed(2)}" y="${sunSetExtY.toFixed(2)}" dy="0.35em" text-anchor="start">
             <tspan font-size="7.2" font-weight="500" fill="#536973">日落 </tspan><tspan font-size="9.4" font-weight="700" fill="#24343d">${state.sunsetLabel}</tspan>
           </text>
         `;
@@ -1797,6 +1864,7 @@
 
             ${moonSectorHtml}
             ${daySectorHtml}
+            ${horizonAxisLineHtml}
 
             <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#7d909b" stroke-width="1.25" stroke-dasharray="4 3" />
 
@@ -2051,6 +2119,44 @@
 
       setInterval(tickCelestialLive, 1000);
 
+      const deleteBackdrop = document.getElementById('cityDeleteBackdrop');
+      const deleteTitle = document.getElementById('cityDeleteTitle');
+      const deleteCancelBtn = document.getElementById('cityDeleteCancelBtn');
+      const deleteConfirmBtn = document.getElementById('cityDeleteConfirmBtn');
+
+      function openDeleteCityDialog(city) {
+        if (savedCities.length <= 1) return;
+        pendingDeleteCityId = String(city.id);
+        deleteTitle.textContent = `是否删除城市「${city.name}」？`;
+        deleteBackdrop.classList.add('show');
+      }
+
+      function closeDeleteCityDialog() {
+        pendingDeleteCityId = null;
+        deleteBackdrop.classList.remove('show');
+      }
+
+      deleteCancelBtn.addEventListener('click', closeDeleteCityDialog);
+      deleteBackdrop.addEventListener('click', e => {
+        if (e.target === deleteBackdrop) closeDeleteCityDialog();
+      });
+
+      deleteConfirmBtn.addEventListener('click', () => {
+        if (!pendingDeleteCityId || savedCities.length <= 1) {
+          closeDeleteCityDialog();
+          return;
+        }
+        const delId = String(pendingDeleteCityId);
+        savedCities = savedCities.filter(c => String(c.id) !== delId);
+        if (String(activeCityId) === delId) {
+          activeCityId = String(savedCities[0].id);
+          fetchWeatherForActiveCity();
+        }
+        saveCities();
+        renderCityTabs();
+        closeDeleteCityDialog();
+      });
+
       function renderCityTabs() {
         const container = document.getElementById('cityTabs');
         container.innerHTML = '';
@@ -2061,25 +2167,85 @@
           btn.className = 'city-tab' + (isActive ? ' active' : '');
           btn.innerHTML = `<span>${escapeHtml(city.name)}</span>`;
 
-          if (savedCities.length > 1) {
-            const del = document.createElement('span');
-            del.className = 'remove-city';
-            del.title = '移除此城市';
-            del.textContent = '×';
-            del.addEventListener('click', e => {
-              e.stopPropagation();
-              savedCities = savedCities.filter(c => String(c.id) !== String(city.id));
-              if (String(activeCityId) === String(city.id)) {
-                activeCityId = String(savedCities[0].id);
-                fetchWeatherForActiveCity();
-              }
-              saveCities();
-              renderCityTabs();
-            });
-            btn.appendChild(del);
+          let pressTimer = null;
+          let longPressTriggered = false;
+          let startX = 0;
+          let startY = 0;
+
+          function clearPressTimer() {
+            if (pressTimer) {
+              clearTimeout(pressTimer);
+              pressTimer = null;
+            }
           }
 
-          btn.addEventListener('click', () => {
+          function triggerLongPress() {
+            clearPressTimer();
+            if (savedCities.length <= 1) return;
+            longPressTriggered = true;
+            if (navigator.vibrate) {
+              try { navigator.vibrate(18); } catch (e) {}
+            }
+            openDeleteCityDialog(city);
+          }
+
+          btn.addEventListener('contextmenu', e => {
+            e.preventDefault();
+          });
+
+          btn.addEventListener('touchstart', e => {
+            if (e.touches.length !== 1) return;
+            longPressTriggered = false;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            clearPressTimer();
+            pressTimer = setTimeout(triggerLongPress, 480);
+          }, { passive: true });
+
+          btn.addEventListener('touchmove', e => {
+            if (!pressTimer || e.touches.length !== 1) return;
+            const dx = Math.abs(e.touches[0].clientX - startX);
+            const dy = Math.abs(e.touches[0].clientY - startY);
+            if (dx > 8 || dy > 8) {
+              clearPressTimer();
+            }
+          }, { passive: true });
+
+          btn.addEventListener('touchend', e => {
+            clearPressTimer();
+            if (longPressTriggered) {
+              e.preventDefault();
+            }
+          });
+
+          btn.addEventListener('touchcancel', clearPressTimer);
+
+          btn.addEventListener('mousedown', e => {
+            if (e.button !== 0) return;
+            longPressTriggered = false;
+            startX = e.clientX;
+            startY = e.clientY;
+            clearPressTimer();
+            pressTimer = setTimeout(triggerLongPress, 480);
+          });
+
+          btn.addEventListener('mousemove', e => {
+            if (!pressTimer) return;
+            if (Math.abs(e.clientX - startX) > 8 || Math.abs(e.clientY - startY) > 8) {
+              clearPressTimer();
+            }
+          });
+
+          btn.addEventListener('mouseup', clearPressTimer);
+          btn.addEventListener('mouseleave', clearPressTimer);
+
+          btn.addEventListener('click', e => {
+            if (longPressTriggered) {
+              e.preventDefault();
+              e.stopPropagation();
+              longPressTriggered = false;
+              return;
+            }
             activeCityId = String(city.id);
             saveCities();
             renderCityTabs();
