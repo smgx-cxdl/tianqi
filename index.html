@@ -499,12 +499,12 @@
 
     .celestial-cd-box {
       color: #000;
-      line-height: 1.2;
+      line-height: 1.15;
       transition: color 0.25s ease;
     }
 
     .celestial-cd-label {
-      font-size: 12.5px;
+      font-size: 10.5px;
       font-weight: 400;
       color: inherit;
     }
@@ -519,16 +519,16 @@
     }
 
     .celestial-cd-val .cd-num {
-      font-size: 19px;
+      font-size: 11.5px;
       font-weight: 400;
       line-height: 1.05;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
     }
 
     .celestial-cd-val .cd-unit {
-      font-size: 11px;
+      font-size: 8px;
       font-weight: 400;
-      margin: 0 2px 0 0.5px;
+      margin: 0 1.5px 0 0.5px;
     }
 
     .celestial-cd-val .cd-unit:last-child {
@@ -953,14 +953,14 @@
         bottom: 5px;
       }
       .celestial-cd-label {
-        font-size: 10.5px;
+        font-size: 9.5px;
       }
       .celestial-cd-val .cd-num {
-        font-size: 15.5px;
+        font-size: 10px;
       }
       .celestial-cd-val .cd-unit {
-        font-size: 9.5px;
-        margin: 0 1.5px 0 0.5px;
+        font-size: 7.5px;
+        margin: 0 1px 0 0.5px;
       }
       .celestial-svg {
         width: 222px;
@@ -1073,13 +1073,13 @@
         font-size: 9.5px;
       }
       .celestial-cd-label {
-        font-size: 10px;
+        font-size: 9px;
       }
       .celestial-cd-val .cd-num {
-        font-size: 14px;
+        font-size: 9.5px;
       }
       .celestial-cd-val .cd-unit {
-        font-size: 9px;
+        font-size: 7px;
       }
       .weather-city-name {
         font-size: 16px;
@@ -1734,11 +1734,6 @@
                 fill="rgba(245, 184, 65, 0.20)" />
         `;
 
-        const horizonAxisLineHtml = `
-          <line x1="${(cx - R).toFixed(2)}" y1="${cy}" x2="${(cx + R).toFixed(2)}" y2="${cy}"
-                stroke="#9aaab3" stroke-width="0.6" stroke-dasharray="2 2.5" opacity="0.58" />
-        `;
-
         const sectorSolidLinesHtml = `
           <line x1="${cx}" y1="${cy}" x2="${rx1.toFixed(2)}" y2="${ry1.toFixed(2)}"
                 stroke="#d68536" stroke-width="1.15" opacity="0.88" />
@@ -1748,7 +1743,6 @@
           <circle cx="${rx2.toFixed(2)}" cy="${ry2.toFixed(2)}" r="1.9" fill="#e68228" />
         `;
 
-        // 日出/日落外延线条沿扇形边同一直线向外延伸
         const sunRiseExtR = Math.abs(Math.sin(aRise)) < 0.2 ? 87 : 84;
         const sunRiseExtX = cx + sunRiseExtR * Math.cos(aRise);
         const sunRiseExtY = cy - sunRiseExtR * Math.sin(aRise);
@@ -1756,13 +1750,6 @@
         const sunSetExtR = Math.abs(Math.sin(aSet)) < 0.2 ? 90 : 84;
         const sunSetExtX = cx + sunSetExtR * Math.cos(aSet);
         const sunSetExtY = cy - sunSetExtR * Math.sin(aSet);
-
-        const sunPointerLinesHtml = `
-          <line x1="${rx1.toFixed(2)}" y1="${ry1.toFixed(2)}" x2="${sunRiseExtX.toFixed(2)}" y2="${sunRiseExtY.toFixed(2)}"
-                stroke="#d68536" stroke-width="0.9" opacity="0.72" stroke-linecap="round" />
-          <line x1="${rx2.toFixed(2)}" y1="${ry2.toFixed(2)}" x2="${sunSetExtX.toFixed(2)}" y2="${sunSetExtY.toFixed(2)}"
-                stroke="#d68536" stroke-width="0.9" opacity="0.72" stroke-linecap="round" />
-        `;
 
         const sunLabelsOnRingHtml = `
           <text x="${(sunRiseExtX - 2.0).toFixed(2)}" y="${sunRiseExtY.toFixed(2)}" dy="0.35em" text-anchor="end">
@@ -1801,14 +1788,6 @@
           const a = timeTo24hAngle(getCityLocalHours(state.todayMoonSet.time, state.offsetSec));
           moonMarkersHtml += `<circle cx="${(cx + R * Math.cos(a)).toFixed(2)}" cy="${(cy - R * Math.sin(a)).toFixed(2)}" r="2.1" fill="#0ea5e9" opacity="0.9" />`;
         }
-
-        const tipX = cx + R * Math.cos(nowAngle);
-        const tipY = cy - R * Math.sin(nowAngle);
-        const handColor = state.isDaytime ? 'rgba(225, 118, 22, 0.55)' : 'rgba(14, 165, 233, 0.55)';
-        const timeNeedleHtml = `
-          <line x1="${cx}" y1="${cy}" x2="${tipX.toFixed(2)}" y2="${tipY.toFixed(2)}"
-                stroke="${handColor}" stroke-width="0.9" stroke-linecap="round" />
-        `;
 
         const sunRadius = R;
         const moonRadius = R - 13.5;
@@ -1864,12 +1843,10 @@
 
             ${moonSectorHtml}
             ${daySectorHtml}
-            ${horizonAxisLineHtml}
 
             <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#7d909b" stroke-width="1.25" stroke-dasharray="4 3" />
 
             ${dialTicksHtml}
-            ${sunPointerLinesHtml}
             ${sectorSolidLinesHtml}
             ${dialLabelsHtml}
             ${sunLabelsOnRingHtml}
@@ -1877,7 +1854,6 @@
             <text x="${cx}" y="${cy - 11}" text-anchor="middle" font-size="13" font-weight="600" fill="#c96c1f" opacity="0.88">昼</text>
             <text x="${cx}" y="${cy + 19}" text-anchor="middle" font-size="13" font-weight="600" fill="#4f6570" opacity="0.88">夜</text>
 
-            ${timeNeedleHtml}
             <circle cx="${cx}" cy="${cy}" r="2.3" fill="#566b76" />
 
             ${moonMarkersHtml}
