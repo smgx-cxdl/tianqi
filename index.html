@@ -339,7 +339,7 @@
       gap: 10px;
       margin-left: 8px;
       margin-right: auto;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: normal;
       letter-spacing: 0;
       color: var(--ink-sub);
@@ -349,7 +349,7 @@
     .header-astro-item {
       display: inline-flex;
       align-items: center;
-      gap: 0;
+      gap: 1px;
       line-height: 1;
     }
 
@@ -359,9 +359,9 @@
     }
 
     .header-astro-svg {
-      width: 18px;
-      height: 18px;
-      margin-left: -1px;
+      width: 24px;
+      height: 24px;
+      margin-left: 0;
       display: inline-block;
       vertical-align: middle;
       overflow: visible;
@@ -385,7 +385,7 @@
       background: var(--sky-soft);
     }
 
-    /* 日月演示框：四周角落放置昼夜时长、倒计时、日出日落（左下）、月出月落（右下） */
+    /* 日月演示框：左上昼夜时长、右上倒计时、右下月出月落，日出日落随圆环显示 */
     .weather-now {
       position: relative;
       background: transparent;
@@ -406,7 +406,6 @@
       right: 10px;
       z-index: 2;
       display: flex;
-      justify-content: space-between;
       gap: 6px;
       font-size: 12px;
       line-height: 1.32;
@@ -417,23 +416,23 @@
 
     .celestial-top-info {
       top: 7px;
+      justify-content: space-between;
       align-items: flex-start;
       pointer-events: none;
     }
 
     .celestial-bottom-info {
       bottom: 7px;
+      justify-content: flex-end;
       align-items: flex-end;
     }
 
-    .celestial-dur-box,
-    .celestial-corner-left {
+    .celestial-dur-box {
       display: flex;
       flex-direction: column;
     }
 
     .celestial-dur-box strong,
-    .celestial-corner-left strong,
     .celestial-corner-right strong {
       color: var(--ink-main);
       font-weight: 600;
@@ -449,19 +448,45 @@
     }
 
     .celestial-cd-box {
-      font-size: 14px;
-      line-height: 1.3;
       color: #000;
+      line-height: 1.2;
+      transition: color 0.25s ease;
     }
 
     .celestial-cd-label {
-      color: #000;
+      font-size: 12.5px;
+      font-weight: 400;
+      color: inherit;
     }
 
     .celestial-cd-val {
-      color: #000;
-      font-weight: 700;
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      color: inherit;
       font-variant-numeric: tabular-nums;
+      margin-top: 1px;
+    }
+
+    .celestial-cd-val .cd-num {
+      font-size: 19px;
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: 0.3px;
+    }
+
+    .celestial-cd-val .cd-unit {
+      font-size: 11px;
+      font-weight: 400;
+      margin: 0 2px 0 0.5px;
+    }
+
+    .celestial-cd-val .cd-unit:last-child {
+      margin-right: 0;
+    }
+
+    .celestial-cd-box.is-after-sunset {
+      color: #9aa7ae;
     }
 
     .weather-celestial-wrap {
@@ -473,8 +498,8 @@
     }
 
     .celestial-svg {
-      width: 282px;
-      height: 282px;
+      width: 276px;
+      height: 276px;
       max-width: 100%;
       max-height: 100%;
       display: block;
@@ -851,8 +876,8 @@
         margin-left: 6px;
       }
       .header-astro-svg {
-        width: 16px;
-        height: 16px;
+        width: 21px;
+        height: 21px;
       }
       .cal-btn {
         padding: 2.5px 8px;
@@ -861,7 +886,7 @@
 
       /* 日月演示框：增大高度与圆环尺寸，顺延下移下方板块填补屏底留白 */
       .weather-now {
-        height: 258px;
+        height: 254px;
         padding: 4px 6px;
       }
       .celestial-top-info,
@@ -877,13 +902,19 @@
       .celestial-bottom-info {
         bottom: 5px;
       }
-      .celestial-cd-box {
-        font-size: 12px;
-        line-height: 1.25;
+      .celestial-cd-label {
+        font-size: 10.5px;
+      }
+      .celestial-cd-val .cd-num {
+        font-size: 15.5px;
+      }
+      .celestial-cd-val .cd-unit {
+        font-size: 9.5px;
+        margin: 0 1.5px 0 0.5px;
       }
       .celestial-svg {
-        width: 246px;
-        height: 246px;
+        width: 222px;
+        height: 222px;
       }
 
       /* 深圳16℃板块：加宽加高、字大些 */
@@ -976,19 +1007,29 @@
       .live-clock strong {
         font-size: 11.5px;
       }
+      .header-astro-svg {
+        width: 19px;
+        height: 19px;
+      }
       .weather-now {
         height: 226px;
       }
       .celestial-svg {
-        width: 216px;
-        height: 216px;
+        width: 198px;
+        height: 198px;
       }
       .celestial-top-info,
       .celestial-bottom-info {
         font-size: 9.5px;
       }
-      .celestial-cd-box {
-        font-size: 11px;
+      .celestial-cd-label {
+        font-size: 10px;
+      }
+      .celestial-cd-val .cd-num {
+        font-size: 14px;
+      }
+      .celestial-cd-val .cd-unit {
+        font-size: 9px;
       }
       .weather-city-name {
         font-size: 16px;
@@ -1061,8 +1102,8 @@
                         <stop offset="100%" stop-color="rgba(255, 160, 32, 0)" />
                       </radialGradient>
                     </defs>
-                    <circle cx="10" cy="10" r="9.6" fill="url(#hdrSunHaloGrad)" />
-                    <circle cx="10" cy="10" r="7.0" fill="url(#hdrSunBodyGrad)" stroke="#e06508" stroke-width="0.6" />
+                    <circle cx="10" cy="10" r="9.8" fill="url(#hdrSunHaloGrad)" />
+                    <circle cx="10" cy="10" r="7.4" fill="url(#hdrSunBodyGrad)" stroke="#e06508" stroke-width="0.6" />
                   </svg>
                 </span>
                 <span class="header-astro-item" id="headerMoonBadge" title="月相">
@@ -1435,13 +1476,20 @@
         return `${h}时${m}分`;
       }
 
-      function formatCountdownHms(diffMs) {
-        if (!Number.isFinite(diffMs) || diffMs < 0) return '--时--分--秒';
+      function getCountdownParts(diffMs) {
+        if (!Number.isFinite(diffMs) || diffMs < 0) {
+          return { h: '--', m: '--', s: '--' };
+        }
         const totalSec = Math.floor(diffMs / 1000);
-        const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-        const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-        const s = String(totalSec % 60).padStart(2, '0');
-        return `${h}时${m}分${s}秒`;
+        return {
+          h: String(Math.floor(totalSec / 3600)).padStart(2, '0'),
+          m: String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0'),
+          s: String(totalSec % 60).padStart(2, '0')
+        };
+      }
+
+      function buildCountdownValHtml(parts) {
+        return `<span class="cd-num" id="cdHour">${parts.h}</span><span class="cd-unit">时</span><span class="cd-num" id="cdMin">${parts.m}</span><span class="cd-unit">分</span><span class="cd-num" id="cdSec">${parts.s}</span><span class="cd-unit">秒</span>`;
       }
 
       function getMoonPhaseName(phase) {
@@ -1497,7 +1545,7 @@
           moonSvg.innerHTML = buildMoonPhaseSvg(
             10,
             10,
-            6.0,
+            7.2,
             cState.moonIllum.phase,
             cState.moonIllum.fraction,
             cState.lat < 0
@@ -1584,7 +1632,7 @@
           dayDurText: formatDurationHm(dayMins),
           nightDurText: formatDurationHm(nightMins),
           cdLabel,
-          cdValText: formatCountdownHms(cdDiffMs)
+          cdParts: getCountdownParts(cdDiffMs)
         };
       }
 
@@ -1632,6 +1680,30 @@
                 stroke="#d68536" stroke-width="1.15" opacity="0.88" />
           <circle cx="${rx1.toFixed(2)}" cy="${ry1.toFixed(2)}" r="1.9" fill="#e68228" />
           <circle cx="${rx2.toFixed(2)}" cy="${ry2.toFixed(2)}" r="1.9" fill="#e68228" />
+        `;
+
+        const sunRiseLabelY = Math.max(30, Math.min(146, ry1));
+        const sunRiseEdgeDx = Math.sqrt(Math.max(0, 81 * 81 - (sunRiseLabelY - cy) * (sunRiseLabelY - cy)));
+        const sunRiseLabelX = cx - Math.max(sunRiseEdgeDx, Math.abs(sunRiseLabelY - cy) < 12 ? 82 : 0) - 4.5;
+
+        const sunSetLabelY = Math.max(30, Math.min(146, ry2));
+        const sunSetEdgeDx = Math.sqrt(Math.max(0, 81 * 81 - (sunSetLabelY - cy) * (sunSetLabelY - cy)));
+        const sunSetLabelX = cx + Math.max(sunSetEdgeDx, Math.abs(sunSetLabelY - cy) < 12 ? 86 : 0) + 4.5;
+
+        const sunPointerLinesHtml = `
+          <line x1="${rx1.toFixed(2)}" y1="${ry1.toFixed(2)}" x2="${(sunRiseLabelX + 2.2).toFixed(2)}" y2="${sunRiseLabelY.toFixed(2)}"
+                stroke="#d68536" stroke-width="0.75" opacity="0.52" />
+          <line x1="${rx2.toFixed(2)}" y1="${ry2.toFixed(2)}" x2="${(sunSetLabelX - 2.2).toFixed(2)}" y2="${sunSetLabelY.toFixed(2)}"
+                stroke="#d68536" stroke-width="0.75" opacity="0.52" />
+        `;
+
+        const sunLabelsOnRingHtml = `
+          <text x="${sunRiseLabelX.toFixed(2)}" y="${sunRiseLabelY.toFixed(2)}" dy="0.35em" text-anchor="end">
+            <tspan font-size="7.2" font-weight="500" fill="#536973">日出 </tspan><tspan font-size="9.4" font-weight="700" fill="#24343d">${state.sunriseLabel}</tspan>
+          </text>
+          <text x="${sunSetLabelX.toFixed(2)}" y="${sunSetLabelY.toFixed(2)}" dy="0.35em" text-anchor="start">
+            <tspan font-size="7.2" font-weight="500" fill="#536973">日落 </tspan><tspan font-size="9.4" font-weight="700" fill="#24343d">${state.sunsetLabel}</tspan>
+          </text>
         `;
 
         let dialTicksHtml = '';
@@ -1729,8 +1801,10 @@
             <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#7d909b" stroke-width="1.25" stroke-dasharray="4 3" />
 
             ${dialTicksHtml}
+            ${sunPointerLinesHtml}
             ${sectorSolidLinesHtml}
             ${dialLabelsHtml}
+            ${sunLabelsOnRingHtml}
 
             <text x="${cx}" y="${cy - 11}" text-anchor="middle" font-size="13" font-weight="600" fill="#c96c1f" opacity="0.88">昼</text>
             <text x="${cx}" y="${cy + 19}" text-anchor="middle" font-size="13" font-weight="600" fill="#4f6570" opacity="0.88">夜</text>
@@ -1883,19 +1957,15 @@
                 <div>昼<strong>${cState.dayDurText}</strong></div>
                 <div>夜<strong>${cState.nightDurText}</strong></div>
               </div>
-              <div class="celestial-cd-box">
+              <div class="celestial-cd-box${cState.isDaytime ? '' : ' is-after-sunset'}" id="celestialCdBox">
                 <span class="celestial-cd-label" id="sunCountdownLabel">${cState.cdLabel}</span>
-                <span class="celestial-cd-val" id="sunCountdownVal">${cState.cdValText}</span>
+                <span class="celestial-cd-val" id="sunCountdownVal">${buildCountdownValHtml(cState.cdParts)}</span>
               </div>
             </div>
             <div class="weather-celestial-wrap" id="celestialStage" title="24小时制表盘昼夜与日月出落实时演示">
               ${buildCelestialSvg(cState)}
             </div>
             <div class="celestial-bottom-info">
-              <div class="celestial-corner-left" id="sunTimesLeft">
-                <div>日出<strong>${cState.sunriseLabel}</strong></div>
-                <div>日落<strong>${cState.sunsetLabel}</strong></div>
-              </div>
               <div class="celestial-corner-right" id="moonTimesLeft" title="当前月相：${moonPhaseName}">
                 <div>月出<strong>${cState.moonriseLabel}</strong></div>
                 <div>月落<strong>${cState.moonsetLabel}</strong></div>
@@ -1939,10 +2009,19 @@
         if (!lastCelestialCtx) return;
         const cState = computeCelestialState(lastCelestialCtx.city, lastCelestialCtx.offsetSec);
 
+        const cdBoxEl = document.getElementById('celestialCdBox');
         const cdLabelEl = document.getElementById('sunCountdownLabel');
-        const cdValEl = document.getElementById('sunCountdownVal');
+        const cdHourEl = document.getElementById('cdHour');
+        const cdMinEl = document.getElementById('cdMin');
+        const cdSecEl = document.getElementById('cdSec');
+
+        if (cdBoxEl) {
+          cdBoxEl.classList.toggle('is-after-sunset', !cState.isDaytime);
+        }
         if (cdLabelEl) cdLabelEl.textContent = cState.cdLabel;
-        if (cdValEl) cdValEl.textContent = cState.cdValText;
+        if (cdHourEl) cdHourEl.textContent = cState.cdParts.h;
+        if (cdMinEl) cdMinEl.textContent = cState.cdParts.m;
+        if (cdSecEl) cdSecEl.textContent = cState.cdParts.s;
 
         const minKey = formatCityHm(cState.nowMs, lastCelestialCtx.offsetSec);
         if (minKey !== lastSvgMinuteKey) {
@@ -1951,7 +2030,6 @@
 
           const stage = document.getElementById('celestialStage');
           const durBox = document.getElementById('celestialDurBox');
-          const sunLeft = document.getElementById('sunTimesLeft');
           const moonLeft = document.getElementById('moonTimesLeft');
 
           if (stage) stage.innerHTML = buildCelestialSvg(cState);
@@ -1959,12 +2037,6 @@
             durBox.innerHTML = `
               <div>昼<strong>${cState.dayDurText}</strong></div>
               <div>夜<strong>${cState.nightDurText}</strong></div>
-            `;
-          }
-          if (sunLeft) {
-            sunLeft.innerHTML = `
-              <div>日出<strong>${cState.sunriseLabel}</strong></div>
-              <div>日落<strong>${cState.sunsetLabel}</strong></div>
             `;
           }
           if (moonLeft) {
