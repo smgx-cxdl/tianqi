@@ -1811,6 +1811,31 @@
         const sunTitle = `太阳（当前 ${nowClockStr} · 日出 ${state.sunriseLabel} / 日落 ${state.sunsetLabel}）`;
         const moonTitle = `月亮：${moonName}（照明 ${moonPct}% · 月出 ${state.moonriseLabel} / 月落 ${state.moonsetLabel}）`;
 
+        const timePointerHtml = (!state.isDaytime && !state.isMoonVisible)
+          ? (() => {
+              const ux = Math.cos(nowAngle);
+              const uy = -Math.sin(nowAngle);
+              const tx = Math.sin(nowAngle);
+              const ty = Math.cos(nowAngle);
+              const tipR = R - 2.6;
+              const baseR = R - 8.6;
+              const halfW = 3.1;
+              const p1x = cx + tipR * ux;
+              const p1y = cy + tipR * uy;
+              const p2x = cx + baseR * ux - halfW * tx;
+              const p2y = cy + baseR * uy - halfW * ty;
+              const p3x = cx + baseR * ux + halfW * tx;
+              const p3y = cy + baseR * uy + halfW * ty;
+              return `
+                <g>
+                  <title>当前时刻 ${nowClockStr}（日月皆未升起）</title>
+                  <polygon points="${p1x.toFixed(2)},${p1y.toFixed(2)} ${p2x.toFixed(2)},${p2y.toFixed(2)} ${p3x.toFixed(2)},${p3y.toFixed(2)}"
+                           fill="#266f88" stroke="#fcfbf7" stroke-width="0.65" stroke-linejoin="round" />
+                </g>
+              `;
+            })()
+          : '';
+
         const sunElementHtml = state.isDaytime
           ? `
             <g>
@@ -1865,6 +1890,7 @@
             <circle cx="${cx}" cy="${cy}" r="2.3" fill="#566b76" />
 
             ${moonMarkersHtml}
+            ${timePointerHtml}
             ${moonElementHtml}
             ${sunElementHtml}
           </svg>
