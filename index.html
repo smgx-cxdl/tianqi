@@ -1817,20 +1817,25 @@
               const uy = -Math.sin(nowAngle);
               const tx = Math.sin(nowAngle);
               const ty = Math.cos(nowAngle);
-              const tipR = R - 2.6;
-              const baseR = R - 8.6;
-              const halfW = 3.1;
-              const p1x = cx + tipR * ux;
-              const p1y = cy + tipR * uy;
-              const p2x = cx + baseR * ux - halfW * tx;
-              const p2y = cy + baseR * uy - halfW * ty;
-              const p3x = cx + baseR * ux + halfW * tx;
-              const p3y = cy + baseR * uy + halfW * ty;
+              const tipR = R - 2.8;
+              const tailR = R - 10.8;
+              const wingR = tipR - 3.0;
+              const wingW = 2.7;
+              const tailX = cx + tailR * ux;
+              const tailY = cy + tailR * uy;
+              const shaftEndX = cx + (tipR - 0.3) * ux;
+              const shaftEndY = cy + (tipR - 0.3) * uy;
+              const tipX = cx + tipR * ux;
+              const tipY = cy + tipR * uy;
+              const w1x = cx + wingR * ux - wingW * tx;
+              const w1y = cy + wingR * uy - wingW * ty;
+              const w2x = cx + wingR * ux + wingW * tx;
+              const w2y = cy + wingR * uy + wingW * ty;
               return `
-                <g>
+                <g fill="none" stroke="#266f88" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
                   <title>当前时刻 ${nowClockStr}（日月皆未升起）</title>
-                  <polygon points="${p1x.toFixed(2)},${p1y.toFixed(2)} ${p2x.toFixed(2)},${p2y.toFixed(2)} ${p3x.toFixed(2)},${p3y.toFixed(2)}"
-                           fill="#266f88" stroke="#fcfbf7" stroke-width="0.65" stroke-linejoin="round" />
+                  <line x1="${tailX.toFixed(2)}" y1="${tailY.toFixed(2)}" x2="${shaftEndX.toFixed(2)}" y2="${shaftEndY.toFixed(2)}" />
+                  <polyline points="${w1x.toFixed(2)},${w1y.toFixed(2)} ${tipX.toFixed(2)},${tipY.toFixed(2)} ${w2x.toFixed(2)},${w2y.toFixed(2)}" />
                 </g>
               `;
             })()
